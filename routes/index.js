@@ -2,6 +2,7 @@ var express = require("express");
 var router = express.Router();
 const axios = require("axios");
 const cheerio = require("cheerio");
+const FormData = require("form-data");
 const { route } = require(".");
 const { path } = require("../app");
 require("dotenv").config();
@@ -80,7 +81,7 @@ router.get("/new-anime", function (req, res, next) {
         const link = $(elem)
           .find("a")
           .attr("href")
-          .replace(process.env.SCRAPE_URL, "/");
+          .replace(process.env.SCRAPE_URL, "");
         const title = $(elem).find("h2.entry-title > a").text();
         const episode = $(elem)
           .find("div.dtla > span:nth-child(2)")
@@ -190,6 +191,7 @@ router.get("/list-anime", function (req, res, next) {
           total_views,
           description,
           genres,
+          detail_url: `/detail-anime${slug}`,
         });
       });
 
@@ -333,7 +335,7 @@ router.get("/detail-anime/:slug", function (req, res, next) {
           .attr("href")
           .replace(process.env.SCRAPE_URL, "");
         const episode = Number($(elem).find("span.eps > a").text());
-        episodes.push({ title, link, episode });
+        episodes.push({ title, link, detail_eps: `/detail-anime-episode${link}`, episode });
       });
 
       res.json({
@@ -361,6 +363,68 @@ router.get("/detail-anime/:slug", function (req, res, next) {
     })
     .catch((error) => {
       console.error(error);
+    });
+});
+
+router.get("/detail-anime-episode/:slug", function (req, res, next) {
+  axios
+    .get(`${process.env.SCRAPE_URL}/${req.params.slug}`)
+    .then((response) => {
+      const html = response.data;
+      const $ = cheerio.load(html);
+
+      const title = $(".info_episode > div > h1").text().trim();
+      const description = $(".info_episode  > div > div.entry-content.entry-content-single").text().trim();
+      const episode_number = Number($("span[itemprop='episodeNumber']").text().trim());
+      const video_url = $("#player_embed > .pframe > iframe").attr("src") || 'belu tersedia ( segera )';
+      const videoslist = $("#server > ul > li");
+      const videos = [];
+      videoslist.each((i, elem) => {
+        const title = $(elem).find("span").text().trim();
+        const id = $(elem).find(".east_player_option").attr("id");
+        const post = $(elem).find(".east_player_option").attr("data-post");
+        const nume = $(elem).find(".east_player_option").attr("data-nume");
+        const action = "player_ajax"
+        const type = $(elem).find(".east_player_option").attr("data-type");
+        const video = `/get-video/${action}/${post}/${nume}/${type}`;
+        videos.push({ id, title, post, action, nume, type, video });
+      });
+
+      res.json({
+        title,
+        description,
+        episode_number,
+        video_url,
+        videos
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+});
+
+router.get("/get-video/:action/:post/:nume/:type", function (req, res, next) {
+  const formData = new FormData();
+  formData.append("action", req.params.action);
+  formData.append("post", req.params.post);
+  formData.append("nume", req.params.nume);
+  formData.append("type", req.params.type);
+
+  axios
+    .post(`${process.env.SCRAPE_URL}/wp-admin/admin-ajax.php`, formData, {
+      headers: formData.getHeaders(),
+    })
+    .then((response) => {
+      const iframeHtml = response.data;
+      const urlMatch = iframeHtml.match(/src="([^"]+)"/);
+      res.json({
+        response: response.data,
+        url: urlMatch[1]
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: "Something went wrong" });
     });
 });
 
