@@ -38,6 +38,30 @@ router.get("/", function (req, res, next) {
           slug: "string",
         },
       },
+      {
+        method: "GET",
+        path: "/detail-anime-episode/:slug",
+        description: "Get detail anime episode",
+        params: {
+          slug: "string",
+        },
+      },
+      {
+        method: "GET",
+        path: "/get-video/:action/:post/:nume/:type",
+        description: "Get video url",
+        params: {
+          action: "string",
+          post: "string",
+          nume: "string",
+          type: "string",
+        },
+      },
+      {
+        method: "GET",
+        path: "/genres",
+        description: "Get genres anime",
+      },
     ]
   });
 });
@@ -426,6 +450,26 @@ router.get("/get-video/:action/:post/:nume/:type", function (req, res, next) {
       console.error(error);
       res.status(500).json({ error: "Something went wrong" });
     });
+});
+
+router.get("/genres", function (req, res, next) {
+  axios.get(`${process.env.SCRAPE_URL}/daftar-anime-2/`).then((response) => {
+    const html = response.data;
+    const $ = cheerio.load(html);
+
+    const genreList = [];
+    
+    $("tr.filter_tax > td.filter_act.genres > label").each((i, elem) => {
+      const title = $(elem).text().trim();
+      const id = $(elem).find("input").attr("value");
+      genreList.push({ title, id });
+    });
+
+    res.json({
+      data: genreList,
+      total_items: genreList.length,
+    });
+  });
 });
 
 module.exports = router;
