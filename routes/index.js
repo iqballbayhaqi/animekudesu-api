@@ -13,6 +13,7 @@ router.get("/", function (req, res, next) {
     message: "Welcome to Anime API",
     author: "@Iqballbayhaqi",
     scraping_url: process.env.SCRAPE_URL,
+    support_me: 'https://ko-fi.com/iqballbaihaqi',
     routes: [
       {
         method: "GET",
