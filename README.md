@@ -13,7 +13,7 @@ git clone https://github.com/iqballbayhaqi/animekudesu-api
 ```
 2. Install dependencies
 
-In my case, i'm using pnpm as my package manager, you can adjust with your favorite package manager
+In my case, i'm using npm as my package manager, you can adjust with your favorite package manager
 
 ```
 npm install
