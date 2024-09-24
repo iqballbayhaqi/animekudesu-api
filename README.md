@@ -31,3 +31,15 @@ Please make sure to update tests as appropriate.
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
+## TODO
+
+[ ] List On Going Anime
+[ ] List Completed Anime
+[ ] List By Type (TV, OVA, ONA, Special, Movie)
+[ ] List By Alphabet
+[ ] List Popular
+[ ] List Latest Update
+[ ] List Latest Added
+[ ] Search Anime by title
+[ ] Release Schedule
