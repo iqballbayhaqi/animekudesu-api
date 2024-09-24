@@ -540,8 +540,8 @@ router.get("/genre-anime/:genre", function (req, res, next) {
     const page_section = $("#main > div.pagination > span:nth-child(1)")
       .text()
       .trim();
-    const current_page = parseInt(page_section.match(/Page (\d+) of/)[1]);
-    const total_page = parseInt(page_section.match(/of (\d+)/)[1]);
+    const current_page = page_section ? parseInt(page_section.match(/Page (\d+) of/)[1]) : 1;
+    const total_page = page_section ? parseInt(page_section.match(/of (\d+)/)[1]) : 1;
 
     res.json({
       data: animeList,
