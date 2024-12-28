@@ -647,4 +647,98 @@ router.get("/ongoing-anime", function (req, res, next) {
     });
 });
 
+router.get("/completed-anime", function (req, res, next) {
+  axios.get(`${process.env.SCRAPE_URL}/daftar-anime-2/?status=Finished+Airing`).then((response) => {
+    const html = response.data;
+    const $ = cheerio.load(html);
+    const page_section = $("#main > div.relat > div > span:nth-child(1)")
+      .text()
+      .trim();
+    const total_page = parseInt(page_section.match(/of (\d+)/)[1]);
+
+    if (total_page < req.query.page || req.query.page < 1) {
+      return res.json({
+        data: [],
+        total_items: 0,
+        current_page: 0,
+        total_page,
+      });
+    }
+  });
+
+  axios
+    .get(
+      `${process.env.SCRAPE_URL}/daftar-anime-2/page/${req.query.page || "1"}`
+    )
+    .then((response) => {
+      const html = response.data;
+      const $ = cheerio.load(html);
+
+      const animeList = [];
+
+      $("div.relat > article.animpost").each((i, elem) => {
+        const slug = $(elem)
+          .find("div.animposx > a")
+          .attr("href")
+          .replace(process.env.SCRAPE_URL + "/anime", "");
+        const img = $(elem).find("div.content-thumb > img").attr("src");
+        const alt = $(elem).find("div.content-thumb > img").attr("alt");
+        const type = $(elem).find("div.content-thumb > div.type").text().trim();
+        const score = $(elem)
+          .find("div.content-thumb > div.score")
+          .text()
+          .trim();
+        const title = $(elem).find("div.stooltip > div.title").text().trim();
+        const total_views = Number(
+          $(elem)
+            .find("div.stooltip > div.metadata > span:nth-child(3)")
+            .text()
+            .trim()
+            .replace(" Views", "")
+        );
+        const description = $(elem)
+          .find("div.stooltip > div.ttls")
+          .text()
+          .trim();
+        const genre = $(elem).find("div.stooltip > div.genres > div > a");
+        const genres = [];
+        genre.each((i, elem) => {
+          genres.push({
+            tag: $(elem).text().trim(),
+            link: $(elem).attr("href"),
+          });
+        });
+
+        animeList.push({
+          img,
+          alt,
+          slug,
+          type,
+          score,
+          title,
+          total_views,
+          description,
+          genres,
+          detail_url: `/detail-anime${slug}`,
+        });
+      });
+
+      const page_section = $("#main > div.relat > div > span:nth-child(1)")
+        .text()
+        .trim();
+      const current_page = parseInt(page_section.match(/Page (\d+) of/)[1]);
+      const total_page = parseInt(page_section.match(/of (\d+)/)[1]);
+
+      res.json({
+        data: animeList,
+        total_items: animeList.length,
+        current_page,
+        total_page,
+      });
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+});
+
 module.exports = router;
