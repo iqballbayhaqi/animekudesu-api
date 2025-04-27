@@ -574,7 +574,7 @@ router.get("/ongoing-anime", function (req, res, next) {
 
   axios
     .get(
-      `${process.env.SCRAPE_URL}/daftar-anime-2/page/${req.query.page || "1"}`
+      `${process.env.SCRAPE_URL}/daftar-anime-2/page/${req.query.page || "1"}/?status=Currently+Airing`
     )
     .then((response) => {
       const html = response.data;
@@ -668,7 +668,7 @@ router.get("/completed-anime", function (req, res, next) {
 
   axios
     .get(
-      `${process.env.SCRAPE_URL}/daftar-anime-2/page/${req.query.page || "1"}`
+      `${process.env.SCRAPE_URL}/daftar-anime-2/page/${req.query.page || "1"}/?status=Finished+Airing`
     )
     .then((response) => {
       const html = response.data;
