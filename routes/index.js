@@ -256,7 +256,7 @@ router.get("/detail-anime/:slug", function (req, res, next) {
       const html = response.data;
       const $ = cheerio.load(html);
 
-      const title = $("#infoarea > div > div.infoanime.widget_senction > h1")
+      const title = $(".entry-title")
         .text()
         .trim()
         .replace("Nonton Anime ", "");
