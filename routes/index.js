@@ -288,73 +288,73 @@ router.get("/detail-anime/:slug", function (req, res, next) {
         genres.push({ tag: $(elem).text().trim(), link: $(elem).attr("href") });
       });
       const japanese_title = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(1)"
+        ".infox > .spe > span:nth-child(1)"
       )
         .text()
         .trim()
         .replace("Japanese ", "");
       const english_title = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(3)"
+        ".infox > .spe > span:nth-child(3)"
       )
         .text()
         .trim()
         .replace("English ", "");
       const type = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(5)"
+        ".infox > .spe > span:nth-child(5)"
       )
         .text()
         .trim()
         .replace("Type ", "");
       const duration = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(7)"
+        ".infox > .spe > span:nth-child(7)"
       )
         .text()
         .trim()
         .replace("Duration ", "");
       const season = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(9)"
+        ".infox > .spe > span:nth-child(9)"
       )
         .text()
         .trim()
         .replace("Season ", "");
       const producer = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(11)"
+        ".infox > .spe > span:nth-child(11)"
       )
         .text()
         .trim()
         .replace("Producer ", "");
       const synonims = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(2)"
+        ".infox > .spe > span:nth-child(2)"
       )
         .text()
         .trim()
         .replace("Synonyms ", "");
       const status = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(4)"
+        ".infox > .spe > span:nth-child(4)"
       )
         .text()
         .trim()
         .replace("Status ", "");
       const source = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(6)"
+        ".infox > .spe > span:nth-child(6)"
       )
         .text()
         .trim()
         .replace("Source ", "");
       const total_episode = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(8)"
+        ".infox > .spe > span:nth-child(8)"
       )
         .text()
         .trim()
         .replace("Total Episode ", "");
       const studio = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(10)"
+        ".infox > .spe > span:nth-child(10)"
       )
         .text()
         .trim()
         .replace("Studio ", "");
       const released = $(
-        "#infoarea > div > div.anim-senct > div.right-senc.widget_senction > div > div > div > span:nth-child(12)"
+        ".infox > .spe > span:nth-child(12)"
       )
         .text()
         .replace("Released: ", "")
