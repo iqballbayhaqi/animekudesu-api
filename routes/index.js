@@ -745,12 +745,12 @@ router.get("/search-anime", function (req, res, next) {
   axios.get(`${process.env.SCRAPE_URL}/daftar-anime-2/?title=${req.query.search}&status=&type=&order=title`).then((response) => {
     const html = response.data;
     const $ = cheerio.load(html);
-    const page_section = $("#main > div.relat > div > span:nth-child(1)")
+    const page_section = $("#main > div.pagination > div > span:nth-child(1)")
       .text()
       .trim();
-    const total_page = parseInt(page_section.match(/of (\d+)/)[1]);
+    const total_page = page_section.match(/of (\d+)/) ? parseInt(page_section.match(/of (\d+)/)[1]) : 1;
 
-    if (total_page < req.query.page || req.query.page < 1) {
+    if (total_page && (total_page < req.query.page || req.query.page < 1)) {
       return res.json({
         data: [],
         total_items: 0,
@@ -820,8 +820,10 @@ router.get("/search-anime", function (req, res, next) {
       const page_section = $("#main > div.pagination > span:nth-child(1)")
       .text()
       .trim();
-    const current_page = page_section ? parseInt(page_section.match(/Page (\d+) of/)[1]) : 1;
-    const total_page = page_section ? parseInt(page_section.match(/of (\d+)/)[1]) : 1;
+      console.log('page_section =>', page_section )
+      
+      const current_page = page_section ? parseInt(page_section.match(/Page (\d+) of/)[1]) : 1;
+      const total_page = page_section.match(/of (\d+)/) ? parseInt(page_section.match(/of (\d+)/)[1]) : 1;
 
       res.json({
         data: animeList,
