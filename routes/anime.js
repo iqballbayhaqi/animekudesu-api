@@ -162,6 +162,71 @@ router.get("/completed-anime", asyncHandler(async (req, res) => {
 // Valid anime types
 const validTypes = ["tv", "ova", "ona", "special", "movie"];
 
+// Valid order options
+const validOrders = {
+  "a-z": { param: "title", name: "A-Z (Alphabet)" },
+  "z-a": { param: "titlereverse", name: "Z-A (Reverse Alphabet)" },
+  "latest-update": { param: "update", name: "Latest Update" },
+  "latest-added": { param: "latest", name: "Latest Added" },
+  "popular": { param: "popular", name: "Popular" },
+};
+
+// GET /order-anime/:order - Get anime list by order
+router.get("/order-anime/:order", asyncHandler(async (req, res) => {
+  const order = req.params.order?.toLowerCase();
+  
+  // Validate order
+  if (!validOrders[order]) {
+    return res.status(400).json({
+      message: "Invalid order",
+      valid_orders: Object.keys(validOrders).map(key => ({
+        order: key,
+        name: validOrders[key].name,
+        endpoint: `/order-anime/${key}`,
+      })),
+    });
+  }
+
+  const orderParam = validOrders[order].param;
+  const page = req.query.page || 1;
+
+  // Check total pages first
+  const checkResponse = await scrapeGet(`${process.env.SCRAPE_URL}/daftar-anime-2/?order=${orderParam}`);
+  const $check = cheerio.load(checkResponse.data);
+  const checkPageSection = $check("#main > div.relat > div > span:nth-child(1)").text().trim();
+  const pageMatch = checkPageSection.match(/of (\d+)/);
+  const totalPageCheck = pageMatch ? parseInt(pageMatch[1]) : 1;
+
+  if (totalPageCheck < page || page < 1) {
+    return res.json({
+      data: [],
+      total_items: 0,
+      current_page: 0,
+      total_page: totalPageCheck,
+      order: validOrders[order].name,
+    });
+  }
+
+  // Get anime list
+  const response = await scrapeGet(`${process.env.SCRAPE_URL}/daftar-anime-2/page/${page}/?order=${orderParam}`);
+  const $ = cheerio.load(response.data);
+  const animeList = parseAnimeList($);
+  const { current_page, total_page } = parsePagination($, "#main > div.pagination > span:nth-child(1)");
+
+  res.json({
+    data: animeList,
+    total_items: animeList.length,
+    current_page: current_page || parseInt(page),
+    total_page: total_page || totalPageCheck,
+    order: validOrders[order].name,
+    available_orders: Object.keys(validOrders).map(key => ({
+      order: key,
+      name: validOrders[key].name,
+      endpoint: `/order-anime/${key}`,
+    })),
+  });
+}));
+
 // GET /type-anime/:type - Get anime list by type
 router.get("/type-anime/:type", asyncHandler(async (req, res) => {
   const type = req.params.type?.toLowerCase();

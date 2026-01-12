@@ -122,6 +122,17 @@ router.get("/", function (req, res, next) {
           page: "number",
         },
       },
+      {
+        method: "GET",
+        path: "/order-anime/:order",
+        description: "Get anime list ordered by specific criteria",
+        params: {
+          order: "string (a-z, z-a, latest-update, latest-added, popular)",
+        },
+        query: {
+          page: "number",
+        },
+      },
     ],
   });
 });

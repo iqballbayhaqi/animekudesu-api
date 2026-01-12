@@ -37,9 +37,9 @@ Please make sure to update tests as appropriate.
 - List On Going Anime ✅
 - List Completed Anime ✅
 - List By Type (TV, OVA, ONA, Special, Movie) ✅
-- List By Alphabet
-- List Popular
-- List Latest Update
-- List Latest Added
+- List By Alphabet ✅
+- List Popular ✅
+- List Latest Update ✅
+- List Latest Added ✅
 - Search Anime by title ✅
 - Release Schedule ✅
