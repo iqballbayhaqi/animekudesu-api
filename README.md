@@ -15,11 +15,13 @@ Unofficial REST API untuk mendapatkan data anime dari [Samehadaku](https://sameh
 - 📖 Detail anime dan episode
 - 🎥 Video URL streaming
 - 📚 Swagger UI Documentation
+- 🏗️ MVC Architecture
 
 ## Tech Stack
 
 - **Runtime:** Node.js
 - **Framework:** Express.js
+- **Architecture:** MVC (Model-View-Controller)
 - **Scraping:** Cheerio, Got-Scraping
 - **Documentation:** Swagger UI
 
@@ -115,6 +117,67 @@ Akses Swagger UI di: `http://localhost:3000/api-docs`
 |--------|----------|-------------|
 | GET | `/get-video/:action/:post/:nume/:type` | Get video URL |
 
+## Project Structure (MVC)
+
+```
+animekudesu-new-be/
+├── bin/
+│   └── www                    # Server entry point
+├── controllers/               # Handle request/response
+│   ├── index.js
+│   ├── animeController.js
+│   ├── detailController.js
+│   ├── genreController.js
+│   ├── scheduleController.js
+│   ├── searchController.js
+│   └── videoController.js
+├── middlewares/
+│   └── errorHandler.js        # Error handling middleware
+├── routes/                    # Route definitions
+│   ├── index.js
+│   ├── anime.js
+│   ├── detail.js
+│   ├── genre.js
+│   ├── schedule.js
+│   ├── search.js
+│   └── video.js
+├── services/                  # Business logic & data fetching
+│   ├── index.js
+│   ├── animeService.js
+│   ├── detailService.js
+│   ├── genreService.js
+│   ├── scheduleService.js
+│   ├── searchService.js
+│   └── videoService.js
+├── utils/
+│   └── scraper.js             # Scraping utilities
+├── views/                     # View templates (Jade)
+├── app.js                     # Express app config
+├── swagger.js                 # Swagger configuration
+└── package.json
+```
+
+## Architecture
+
+```
+┌─────────────┐     ┌──────────────┐     ┌─────────────┐     ┌─────────────┐
+│   Client    │ ──▶ │    Routes    │ ──▶ │ Controllers │ ──▶ │  Services   │
+│  (Request)  │     │  (Endpoints) │     │  (Handler)  │     │  (Logic)    │
+└─────────────┘     └──────────────┘     └─────────────┘     └─────────────┘
+                                                                    │
+                                                                    ▼
+                                                            ┌─────────────┐
+                                                            │   Utils     │
+                                                            │  (Scraper)  │
+                                                            └─────────────┘
+```
+
+**Flow:**
+1. **Routes** - Mendefinisikan endpoint dan method HTTP
+2. **Controllers** - Menerima request, memanggil service, mengirim response
+3. **Services** - Business logic, data fetching, dan data processing
+4. **Utils** - Helper functions (scraping, parsing, dll)
+
 ## Response Example
 
 ### Anime List Response
@@ -160,29 +223,6 @@ Akses Swagger UI di: `http://localhost:3000/api-docs`
     }
   ]
 }
-```
-
-## Project Structure
-
-```
-animekudesu-new-be/
-├── bin/
-│   └── www              # Server entry point
-├── middlewares/
-│   └── errorHandler.js  # Error handling middleware
-├── routes/
-│   ├── index.js         # Main router
-│   ├── anime.js         # Anime endpoints
-│   ├── detail.js        # Detail endpoints
-│   ├── genre.js         # Genre endpoints
-│   ├── search.js        # Search endpoints
-│   ├── schedule.js      # Schedule endpoints
-│   └── video.js         # Video endpoints
-├── utils/
-│   └── scraper.js       # Scraping utilities
-├── app.js               # Express app config
-├── swagger.js           # Swagger configuration
-└── package.json
 ```
 
 ## Contributing
