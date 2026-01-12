@@ -8,6 +8,7 @@ const detailRoutes = require("./detail");
 const genreRoutes = require("./genre");
 const searchRoutes = require("./search");
 const videoRoutes = require("./video");
+const scheduleRoutes = require("./schedule");
 
 // Home route - API documentation
 router.get("/", function (req, res, next) {
@@ -101,6 +102,11 @@ router.get("/", function (req, res, next) {
           page: "number",
         },
       },
+      {
+        method: "GET",
+        path: "/release-schedule",
+        description: "Get anime release schedule",
+      },
     ],
   });
 });
@@ -111,5 +117,6 @@ router.use("/", detailRoutes);
 router.use("/", genreRoutes);
 router.use("/", searchRoutes);
 router.use("/", videoRoutes);
+router.use("/", scheduleRoutes);
 
 module.exports = router;

@@ -41,5 +41,5 @@ Please make sure to update tests as appropriate.
 - List Popular
 - List Latest Update
 - List Latest Added
-- Search Anime by title
-- Release Schedule
+- Search Anime by title ✅
+- Release Schedule ✅
