@@ -17,6 +17,7 @@ router.get("/", function (req, res, next) {
     author: "@Iqballbayhaqi",
     scraping_url: process.env.SCRAPE_URL,
     support_me: "https://ko-fi.com/iqballbaihaqi",
+    documentation: "/api-docs",
     routes: [
       {
         method: "GET",
