@@ -106,6 +106,21 @@ router.get("/", function (req, res, next) {
         method: "GET",
         path: "/release-schedule",
         description: "Get anime release schedule",
+        query: {
+          day: "string (monday, tuesday, wednesday, thursday, friday, saturday, sunday)",
+          perpage: "number",
+        },
+      },
+      {
+        method: "GET",
+        path: "/type-anime/:type",
+        description: "Get anime by type (TV, OVA, ONA, Special, Movie)",
+        params: {
+          type: "string (tv, ova, ona, special, movie)",
+        },
+        query: {
+          page: "number",
+        },
       },
     ],
   });

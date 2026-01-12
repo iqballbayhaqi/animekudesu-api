@@ -159,4 +159,59 @@ router.get("/completed-anime", asyncHandler(async (req, res) => {
   });
 }));
 
+// Valid anime types
+const validTypes = ["tv", "ova", "ona", "special", "movie"];
+
+// GET /type-anime/:type - Get anime list by type
+router.get("/type-anime/:type", asyncHandler(async (req, res) => {
+  const type = req.params.type?.toLowerCase();
+  
+  // Validate type
+  if (!validTypes.includes(type)) {
+    return res.status(400).json({
+      message: "Invalid type",
+      valid_types: validTypes.map(t => t.toUpperCase()),
+    });
+  }
+
+  // Format type for URL (capitalize first letter)
+  const typeParam = type.charAt(0).toUpperCase() + type.slice(1);
+  const page = req.query.page || 1;
+
+  // Check total pages first
+  const checkResponse = await scrapeGet(`${process.env.SCRAPE_URL}/daftar-anime-2/?type=${typeParam}&order=title`);
+  const $check = cheerio.load(checkResponse.data);
+  const checkPageSection = $check("#main > div.relat > div > span:nth-child(1)").text().trim();
+  const pageMatch = checkPageSection.match(/of (\d+)/);
+  const totalPageCheck = pageMatch ? parseInt(pageMatch[1]) : 1;
+
+  if (totalPageCheck < page || page < 1) {
+    return res.json({
+      data: [],
+      total_items: 0,
+      current_page: 0,
+      total_page: totalPageCheck,
+      type: typeParam,
+    });
+  }
+
+  // Get anime list
+  const response = await scrapeGet(`${process.env.SCRAPE_URL}/daftar-anime-2/page/${page}/?type=${typeParam}&order=title`);
+  const $ = cheerio.load(response.data);
+  const animeList = parseAnimeList($);
+  const { current_page, total_page } = parsePagination($, "#main > div.pagination > span:nth-child(1)");
+
+  res.json({
+    data: animeList,
+    total_items: animeList.length,
+    current_page: current_page || parseInt(page),
+    total_page: total_page || totalPageCheck,
+    type: typeParam,
+    available_types: validTypes.map(t => ({
+      type: t.toUpperCase(),
+      endpoint: `/type-anime/${t}`,
+    })),
+  });
+}));
+
 module.exports = router;
