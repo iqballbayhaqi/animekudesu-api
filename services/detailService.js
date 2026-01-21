@@ -99,16 +99,66 @@ const getEpisodeDetail = async (slug) => {
     videos.push({ id, title: videoTitle, post, action, nume, type, video });
   });
 
+  const downloads = [];
+  $(".download-eps").each((i, elem) => {
+    const format = $(elem).find("p > b").text().trim();
+    const list = [];
+    $(elem).find("ul > li").each((j, li) => {
+      const resolution = $(li).find("strong").text().trim();
+      const links = [];
+      $(li).find("span > a").each((k, a) => {
+        const title = $(a).text().trim();
+        const link = $(a).attr("href");
+        links.push({ title, link });
+      });
+      list.push({ resolution, links });
+    });
+    downloads.push({ format, list });
+  });
+
   return {
     title,
     description,
     episode_number,
     video_url,
-    videos
+    videos,
+    downloads
+  };
+};
+
+const getBatchDetail = async (slug) => {
+  const response = await scrapeGet(`${BASE_URL}/batch/${slug}`);
+  const $ = cheerio.load(response.data);
+
+  const title = $(".thumb-batch > img").attr("title");
+  const img = $(".thumb-batch > img").attr("src");
+  
+  const downloads = [];
+  $(".download-eps").each((i, elem) => {
+    const format = $(elem).find("p > b").text().trim();
+    const list = [];
+    $(elem).find("ul > li").each((j, li) => {
+      const resolution = $(li).find("strong").text().trim();
+      const links = [];
+      $(li).find("span > a").each((k, a) => {
+        const title = $(a).text().trim();
+        const link = $(a).attr("href");
+        links.push({ title, link });
+      });
+      list.push({ resolution, links });
+    });
+    downloads.push({ format, list });
+  });
+
+  return {
+    title,
+    img,
+    downloads
   };
 };
 
 module.exports = {
   getAnimeDetail,
   getEpisodeDetail,
+  getBatchDetail,
 };

@@ -18,7 +18,17 @@ const getEpisodeDetail = async (req, res) => {
   res.json(result);
 };
 
+/**
+ * Get batch detail
+ */
+const getBatchDetail = async (req, res) => {
+  const { slug } = req.params;
+  const result = await detailService.getBatchDetail(slug);
+  res.json(result);
+};
+
 module.exports = {
   getAnimeDetail,
   getEpisodeDetail,
+  getBatchDetail,
 };
