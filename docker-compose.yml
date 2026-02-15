@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: animekudesu-backend
+    ports:
+      - "3000:3000"
+    volumes:
+      # Mounting data folder untuk persistensi database SQLite
+      - ./data:/app/data
+      # Mounting public folder jika ada upload file yang perlu dipersist
+      - ./public:/app/public
+    environment:
+      - PORT=3000
+      - NODE_ENV=production
+      # Pastikan path database sesuai dengan yang ada di dalam container
+      - BACKUP_DB_PATH=/app/data/backup.db
+    restart: unless-stopped
+    # Healthcheck opsional untuk memastikan server berjalan
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3

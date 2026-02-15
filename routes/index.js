@@ -9,6 +9,7 @@ const genreRoutes = require("./genre");
 const searchRoutes = require("./search");
 const videoRoutes = require("./video");
 const scheduleRoutes = require("./schedule");
+const backupRoutes = require("./backup");
 
 // Home route - API documentation
 router.get("/", function (req, res, next) {
@@ -28,5 +29,6 @@ router.use("/", genreRoutes);
 router.use("/", searchRoutes);
 router.use("/", videoRoutes);
 router.use("/", scheduleRoutes);
+router.use("/backup", backupRoutes);
 
 module.exports = router;
