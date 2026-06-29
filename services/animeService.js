@@ -34,7 +34,7 @@ const getNewAnime = async (page = 1) => {
     const checkResponse = await scrapeGet(`${BASE_URL}/anime-terbaru/page/1`);
     const $check = cheerio.load(checkResponse.data);
     const checkPageSection = $check("#main > div.post-show > ul > div > span:nth-child(1)").text().trim();
-    const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)[1]);
+    const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)?.[1] || 1);
 
     if (totalPageCheck < page || page < 1) {
       return {
@@ -61,8 +61,8 @@ const getNewAnime = async (page = 1) => {
     });
 
     const page_section = $("#main > div.post-show > ul > div > span:nth-child(1)").text().trim();
-    const current_page = parseInt(page_section.match(/Page (\d+) of/)[1]);
-    const total_page = parseInt(page_section.match(/of (\d+)/)[1]);
+    const current_page = parseInt(page_section.match(/Page (\d+) of/)?.[1] || page);
+    const total_page = parseInt(page_section.match(/of (\d+)/)?.[1] || 1);
 
     const result = {
       data: animeList,
@@ -107,8 +107,8 @@ const getListAnime = async (page = 1) => {
   try {
     const checkResponse = await scrapeGet(`${BASE_URL}/daftar-anime-2`);
     const $check = cheerio.load(checkResponse.data);
-    const checkPageSection = $check("#main > div.relat > div > span:nth-child(1)").text().trim();
-    const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)[1]);
+    const checkPageSection = $check("div.pagination > span:nth-child(1)").text().trim();
+    const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)?.[1] || 1);
 
     if (totalPageCheck < page || page < 1) {
       return {
@@ -164,8 +164,8 @@ const getOngoingAnime = async (page = 1) => {
   try {
     const checkResponse = await scrapeGet(`${BASE_URL}/daftar-anime-2/?status=Currently+Airing`);
     const $check = cheerio.load(checkResponse.data);
-    const checkPageSection = $check("#main > div.relat > div > span:nth-child(1)").text().trim();
-    const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)[1]);
+    const checkPageSection = $check("div.pagination > span:nth-child(1)").text().trim();
+    const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)?.[1] || 1);
 
     if (totalPageCheck < page || page < 1) {
       return {
@@ -179,7 +179,7 @@ const getOngoingAnime = async (page = 1) => {
     const response = await scrapeGet(`${BASE_URL}/daftar-anime-2/page/${page}/?status=Currently+Airing`);
     const $ = cheerio.load(response.data);
     const animeList = parseAnimeList($);
-    const { current_page, total_page } = parsePagination($, "#main > div.pagination > span:nth-child(1)");
+    const { current_page, total_page } = parsePagination($, "div.pagination > span:nth-child(1)");
 
     const result = {
       data: animeList,
@@ -221,8 +221,8 @@ const getCompletedAnime = async (page = 1) => {
   try {
     const checkResponse = await scrapeGet(`${BASE_URL}/daftar-anime-2/?status=Finished+Airing`);
     const $check = cheerio.load(checkResponse.data);
-    const checkPageSection = $check("#main > div.relat > div > span:nth-child(1)").text().trim();
-    const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)[1]);
+    const checkPageSection = $check("div.pagination > span:nth-child(1)").text().trim();
+    const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)?.[1] || 1);
 
     if (totalPageCheck < page || page < 1) {
       return {
@@ -236,7 +236,7 @@ const getCompletedAnime = async (page = 1) => {
     const response = await scrapeGet(`${BASE_URL}/daftar-anime-2/page/${page}/?status=Finished+Airing`);
     const $ = cheerio.load(response.data);
     const animeList = parseAnimeList($);
-    const { current_page, total_page } = parsePagination($, "#main > div.pagination > span:nth-child(1)");
+    const { current_page, total_page } = parsePagination($, "div.pagination > span:nth-child(1)");
 
     const result = {
       data: animeList,
@@ -289,7 +289,7 @@ const getAnimeByType = async (type, page = 1) => {
 
   const checkResponse = await scrapeGet(`${BASE_URL}/daftar-anime-2/?type=${typeParam}&order=title`);
   const $check = cheerio.load(checkResponse.data);
-  const checkPageSection = $check("#main > div.relat > div > span:nth-child(1)").text().trim();
+  const checkPageSection = $check("div.pagination > span:nth-child(1)").text().trim();
   const pageMatch = checkPageSection.match(/of (\d+)/);
   const totalPageCheck = pageMatch ? parseInt(pageMatch[1]) : 1;
 
@@ -306,7 +306,7 @@ const getAnimeByType = async (type, page = 1) => {
   const response = await scrapeGet(`${BASE_URL}/daftar-anime-2/page/${page}/?type=${typeParam}&order=title`);
   const $ = cheerio.load(response.data);
   const animeList = parseAnimeList($);
-  const { current_page, total_page } = parsePagination($, "#main > div.pagination > span:nth-child(1)");
+  const { current_page, total_page } = parsePagination($, "div.pagination > span:nth-child(1)");
 
   return {
     data: animeList,
@@ -343,7 +343,7 @@ const getAnimeByOrder = async (order, page = 1) => {
 
   const checkResponse = await scrapeGet(`${BASE_URL}/daftar-anime-2/?order=${orderParam}`);
   const $check = cheerio.load(checkResponse.data);
-  const checkPageSection = $check("#main > div.relat > div > span:nth-child(1)").text().trim();
+  const checkPageSection = $check("div.pagination > span:nth-child(1)").text().trim();
   const pageMatch = checkPageSection.match(/of (\d+)/);
   const totalPageCheck = pageMatch ? parseInt(pageMatch[1]) : 1;
 
@@ -360,7 +360,7 @@ const getAnimeByOrder = async (order, page = 1) => {
   const response = await scrapeGet(`${BASE_URL}/daftar-anime-2/page/${page}/?order=${orderParam}`);
   const $ = cheerio.load(response.data);
   const animeList = parseAnimeList($);
-  const { current_page, total_page } = parsePagination($, "#main > div.pagination > span:nth-child(1)");
+  const { current_page, total_page } = parsePagination($, "div.pagination > span:nth-child(1)");
 
   return {
     data: animeList,

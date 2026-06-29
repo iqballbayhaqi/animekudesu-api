@@ -31,7 +31,7 @@ const getAnimeByGenre = async (genre, page = 1) => {
   const response = await scrapeGet(`${BASE_URL}/genre/${genre}/page/${page}`);
   const $ = cheerio.load(response.data);
   const animeList = parseAnimeList($);
-  const { current_page, total_page } = parsePagination($, "#main > div.pagination > span:nth-child(1)");
+  const { current_page, total_page } = parsePagination($, "div.pagination > span:nth-child(1)");
 
   return {
     data: animeList,

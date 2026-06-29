@@ -82,7 +82,7 @@ const parseAnimeList = ($) => {
 };
 
 // Helper untuk parse pagination
-const parsePagination = ($, selector = "#main > div.relat > div > span:nth-child(1)") => {
+const parsePagination = ($, selector = "div.pagination > span:nth-child(1)") => {
   const page_section = $(selector).text().trim();
   const current_page = page_section ? parseInt(page_section.match(/Page (\d+) of/)?.[1] || 1) : 1;
   const total_page = page_section ? parseInt(page_section.match(/of (\d+)/)?.[1] || 1) : 1;
