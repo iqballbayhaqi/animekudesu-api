@@ -34,6 +34,7 @@ const getNewAnime = async (page = 1) => {
     const checkResponse = await scrapeGet(`${BASE_URL}/anime-terbaru/page/1`);
     const $check = cheerio.load(checkResponse.data);
     const checkPageSection = $check("#main > div.post-show > ul > div > span:nth-child(1)").text().trim();
+    if (!checkPageSection && page > 1) throw new Error('Source pagination missing');
     const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)?.[1] || 1);
 
     if (totalPageCheck < page || page < 1) {
@@ -59,6 +60,7 @@ const getNewAnime = async (page = 1) => {
       const released = $(elem).find("div.dtla > span:nth-child(4)").text().trim().replace("Released on: ", "");
       animeList.push({ img, alt, link, title, episode, posted_by, released });
     });
+    if (animeList.length === 0) throw new Error('Source returned no new anime items');
 
     const page_section = $("#main > div.post-show > ul > div > span:nth-child(1)").text().trim();
     const current_page = parseInt(page_section.match(/Page (\d+) of/)?.[1] || page);
@@ -80,20 +82,18 @@ const getNewAnime = async (page = 1) => {
   } catch (error) {
     console.error('❌ Error scraping new anime, trying backup:', error.message);
     
-    // Fallback to SQLite backup
-    if (USE_BACKUP) {
-      const backupData = getBackupService().getAnimeListBackup('new', page);
-      if (backupData && backupData.length > 0) {
-        console.log('✅ Using backup data for new anime page', page);
-        return {
-          data: backupData,
-          total_items: backupData.length,
-          current_page: page,
-          total_page: page,
-          from_backup: true,
-          backup_note: 'Data from SQLite backup due to scraping error'
-        };
-      }
+    // Read an existing backup even when scheduled backup writes are disabled.
+    const backupData = getBackupService().getAnimeListBackup('new', page);
+    if (backupData && backupData.length > 0) {
+      console.log('✅ Using backup data for new anime page', page);
+      return {
+        data: backupData,
+        total_items: backupData.length,
+        current_page: page,
+        total_page: getBackupService().getAnimeListPageCount('new'),
+        from_backup: true,
+        backup_note: 'Data from SQLite backup due to scraping error'
+      };
     }
     
     throw error;
@@ -108,6 +108,7 @@ const getListAnime = async (page = 1) => {
     const checkResponse = await scrapeGet(`${BASE_URL}/daftar-anime-2`);
     const $check = cheerio.load(checkResponse.data);
     const checkPageSection = $check("div.pagination > span:nth-child(1)").text().trim();
+    if (!checkPageSection && page > 1) throw new Error('Source pagination missing');
     const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)?.[1] || 1);
 
     if (totalPageCheck < page || page < 1) {
@@ -122,6 +123,7 @@ const getListAnime = async (page = 1) => {
     const response = await scrapeGet(`${BASE_URL}/daftar-anime-2/page/${page}`);
     const $ = cheerio.load(response.data);
     const animeList = parseAnimeList($);
+    if (animeList.length === 0) throw new Error('Source returned no anime list items');
     const { current_page, total_page } = parsePagination($);
 
     const result = {
@@ -139,18 +141,16 @@ const getListAnime = async (page = 1) => {
   } catch (error) {
     console.error('❌ Error scraping anime list, trying backup:', error.message);
     
-    if (USE_BACKUP) {
-      const backupData = getBackupService().getAnimeListBackup('list', page);
-      if (backupData && backupData.length > 0) {
-        console.log('✅ Using backup data for anime list page', page);
-        return {
-          data: backupData,
-          total_items: backupData.length,
-          current_page: page,
-          total_page: page,
-          from_backup: true
-        };
-      }
+    const backupData = getBackupService().getAnimeListBackup('list', page);
+    if (backupData && backupData.length > 0) {
+      console.log('✅ Using backup data for anime list page', page);
+      return {
+        data: backupData,
+        total_items: backupData.length,
+        current_page: page,
+        total_page: getBackupService().getAnimeListPageCount('list'),
+        from_backup: true
+      };
     }
     
     throw error;
@@ -165,6 +165,7 @@ const getOngoingAnime = async (page = 1) => {
     const checkResponse = await scrapeGet(`${BASE_URL}/daftar-anime-2/?status=Currently+Airing`);
     const $check = cheerio.load(checkResponse.data);
     const checkPageSection = $check("div.pagination > span:nth-child(1)").text().trim();
+    if (!checkPageSection && page > 1) throw new Error('Source pagination missing');
     const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)?.[1] || 1);
 
     if (totalPageCheck < page || page < 1) {
@@ -179,6 +180,7 @@ const getOngoingAnime = async (page = 1) => {
     const response = await scrapeGet(`${BASE_URL}/daftar-anime-2/page/${page}/?status=Currently+Airing`);
     const $ = cheerio.load(response.data);
     const animeList = parseAnimeList($);
+    if (animeList.length === 0) throw new Error('Source returned no ongoing anime items');
     const { current_page, total_page } = parsePagination($, "div.pagination > span:nth-child(1)");
 
     const result = {
@@ -196,18 +198,16 @@ const getOngoingAnime = async (page = 1) => {
   } catch (error) {
     console.error('❌ Error scraping ongoing anime, trying backup:', error.message);
     
-    if (USE_BACKUP) {
-      const backupData = getBackupService().getAnimeListBackup('ongoing', page);
-      if (backupData && backupData.length > 0) {
-        console.log('✅ Using backup data for ongoing anime page', page);
-        return {
-          data: backupData,
-          total_items: backupData.length,
-          current_page: page,
-          total_page: page,
-          from_backup: true
-        };
-      }
+    const backupData = getBackupService().getAnimeListBackup('ongoing', page);
+    if (backupData && backupData.length > 0) {
+      console.log('✅ Using backup data for ongoing anime page', page);
+      return {
+        data: backupData,
+        total_items: backupData.length,
+        current_page: page,
+        total_page: getBackupService().getAnimeListPageCount('ongoing'),
+        from_backup: true
+      };
     }
     
     throw error;
@@ -222,6 +222,7 @@ const getCompletedAnime = async (page = 1) => {
     const checkResponse = await scrapeGet(`${BASE_URL}/daftar-anime-2/?status=Finished+Airing`);
     const $check = cheerio.load(checkResponse.data);
     const checkPageSection = $check("div.pagination > span:nth-child(1)").text().trim();
+    if (!checkPageSection && page > 1) throw new Error('Source pagination missing');
     const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)?.[1] || 1);
 
     if (totalPageCheck < page || page < 1) {
@@ -236,6 +237,7 @@ const getCompletedAnime = async (page = 1) => {
     const response = await scrapeGet(`${BASE_URL}/daftar-anime-2/page/${page}/?status=Finished+Airing`);
     const $ = cheerio.load(response.data);
     const animeList = parseAnimeList($);
+    if (animeList.length === 0) throw new Error('Source returned no completed anime items');
     const { current_page, total_page } = parsePagination($, "div.pagination > span:nth-child(1)");
 
     const result = {
@@ -253,18 +255,16 @@ const getCompletedAnime = async (page = 1) => {
   } catch (error) {
     console.error('❌ Error scraping completed anime, trying backup:', error.message);
     
-    if (USE_BACKUP) {
-      const backupData = getBackupService().getAnimeListBackup('completed', page);
-      if (backupData && backupData.length > 0) {
-        console.log('✅ Using backup data for completed anime page', page);
-        return {
-          data: backupData,
-          total_items: backupData.length,
-          current_page: page,
-          total_page: page,
-          from_backup: true
-        };
-      }
+    const backupData = getBackupService().getAnimeListBackup('completed', page);
+    if (backupData && backupData.length > 0) {
+      console.log('✅ Using backup data for completed anime page', page);
+      return {
+        data: backupData,
+        total_items: backupData.length,
+        current_page: page,
+        total_page: getBackupService().getAnimeListPageCount('completed'),
+        from_backup: true
+      };
     }
     
     throw error;

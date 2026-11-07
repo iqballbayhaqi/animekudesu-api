@@ -1,6 +1,7 @@
 const { 
   upsertAnimeList, 
   getAnimeList, 
+  getAnimeListPageCount,
   upsertAnimeDetail, 
   getAnimeDetail,
   upsertEpisodeDetail,
@@ -134,6 +135,12 @@ const crawlCategory = async (categoryName, crawlFunction, maxPages = null) => {
     try {
       console.log(`  📄 Crawling ${categoryName} page ${page}...`);
       const result = await crawlFunction(page);
+
+      if (result.from_backup) {
+        console.log(`  ⚠️ Source unavailable; skipping cached ${categoryName} data`);
+        hasMore = false;
+        continue;
+      }
 
       if (result.data && result.data.length > 0) {
         // Save to database
@@ -272,6 +279,7 @@ const runDailyBackup = async () => {
 module.exports = {
   saveAnimeList,
   getAnimeListBackup,
+  getAnimeListPageCount,
   saveAnimeDetail,
   getAnimeDetailBackup,
   saveEpisodeDetail,

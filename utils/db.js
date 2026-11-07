@@ -111,6 +111,12 @@ const getAnimeList = (category, page) => {
   }));
 };
 
+const getAnimeListPageCount = (category) => {
+  const database = getDatabase();
+  return database.prepare('SELECT COALESCE(MAX(page), 0) AS total FROM anime_list WHERE category = ?')
+    .get(category).total;
+};
+
 /**
  * Insert or update anime detail
  */
@@ -251,6 +257,7 @@ module.exports = {
   closeDatabase,
   upsertAnimeList,
   getAnimeList,
+  getAnimeListPageCount,
   upsertAnimeDetail,
   getAnimeDetail,
   upsertEpisodeDetail,

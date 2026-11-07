@@ -1,4 +1,5 @@
 const cheerio = require("cheerio");
+const { validateScrapeResponse } = require('./scrapeResponse');
 require("dotenv").config();
 
 // Dynamic import untuk got-scraping (ESM module)
@@ -23,6 +24,7 @@ const scrapeGet = async (url) => {
       operatingSystems: ['windows']
     }
   });
+  validateScrapeResponse(response);
   
   return { data: response.body, status: response.statusCode };
 };
