@@ -47,7 +47,7 @@ yarn install
 Buat file `.env` di root folder:
 
 ```env
-SCRAPE_URL=https://v1.samehadaku.how
+SCRAPE_URL=https://v2.samehadaku.how
 PORT=3000
 ```
 
