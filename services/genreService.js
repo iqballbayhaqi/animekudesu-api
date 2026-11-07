@@ -36,18 +36,10 @@ const getAllGenres = async () => {
  * Get anime by genre
  */
 const getAnimeByGenre = async (genre, page = 1) => {
-  const response = await scrapeGet(`${BASE_URL}/genre/${genre}/page/${page}`);
+  const pagePath = Number(page) > 1 ? `page/${page}/` : '';
+  const response = await scrapeGet(`${BASE_URL}/daftar-anime-2/${pagePath}?genre%5B%5D=${encodeURIComponent(genre)}`);
   const $ = cheerio.load(response.data);
   const animeList = parseAnimeList($);
-  if (!animeList.length) {
-    $('.post-show > ul > li').each((_, elem) => {
-      const a = $(elem).find('h2.entry-title > a');
-      const url = a.attr('href') || '';
-      const slug = url.replace(/^https?:\/\/[^/]+\/anime/, '').replace(/\/$/, '');
-      if (!slug) return;
-      animeList.push({ title: a.text().trim(), slug, img: $(elem).find('.thumb img').attr('src'), alt: $(elem).find('.thumb img').attr('alt'), type: '', score: '', genres: [{ tag: genre, link: `${BASE_URL}/genre/${genre}/` }], detail_url: `/detail-anime${slug}` });
-    });
-  }
   const { current_page, total_page } = parsePagination($, "div.pagination > span:nth-child(1)");
 
   return {

@@ -31,22 +31,33 @@ async function scrapeWithBrowser(url) {
   if (cached && cached.expires > Date.now()) return cached.value;
   if (active >= 2) await new Promise(resolve => waiting.push(resolve));
   active++;
-  let page;
   try {
-    const browser = await getBrowser();
-    page = await browser.newPage();
-    const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
-    // Challenge pages can complete a navigation after the first response.
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    const data = await page.content();
-    const status = response?.status() || 0;
-    validateScrapeResponse({ statusCode: status, body: data });
-    const value = { data, status };
-    cache.set(url, { value, expires: Date.now() + 5 * 60 * 1000 });
-    if (cache.size > 100) cache.delete(cache.keys().next().value);
-    return value;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      let page;
+      try {
+        const browser = await getBrowser();
+        page = await browser.newPage();
+        const response = await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 30000 });
+        // Challenge pages can complete a navigation after the first response.
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        const data = await page.content();
+        const status = response?.status() || 0;
+        validateScrapeResponse({ statusCode: status, body: data });
+        const value = { data, status };
+        cache.set(url, { value, expires: Date.now() + 5 * 60 * 1000 });
+        if (cache.size > 100) cache.delete(cache.keys().next().value);
+        return value;
+      } catch (error) {
+        if (browserPromise) {
+          const browser = await browserPromise.catch(() => null);
+          if (browser && !browser.isConnected()) browserPromise = undefined;
+        }
+        if (attempt === 1) throw error;
+      } finally {
+        if (page) await page.close().catch(() => {});
+      }
+    }
   } finally {
-    if (page) await page.close().catch(() => {});
     active--;
     waiting.shift()?.();
   }
