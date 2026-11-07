@@ -1,4 +1,4 @@
-const { scrapeGet } = require("../utils/scraper");
+const { scrapeGet, cheerio } = require("../utils/scraper");
 require("dotenv").config();
 
 const BASE_URL = process.env.SCRAPE_URL;
@@ -51,7 +51,7 @@ const getReleaseSchedule = async (day, perPage = 50, debug = false) => {
   const dayParam = day?.toLowerCase();
   const targetDay = dayMap[dayParam] || "monday";
 
-  const apiUrl = `${BASE_URL}/wp-json/custom/v1/all-schedule?perpage=${perPage}&day=${targetDay}&type=schtml`;
+  const apiUrl = `${BASE_URL}/jadwal-rilis/`;
   const response = await scrapeGet(apiUrl);
   
   // Debug mode
@@ -63,32 +63,27 @@ const getReleaseSchedule = async (day, perPage = 50, debug = false) => {
     };
   }
 
-  // Parse JSON response
-  let scheduleData;
-  try {
-    scheduleData = JSON.parse(response.data);
-  } catch (e) {
-    return {
-      error: true,
-      message: "Failed to parse schedule data",
-      errorDetail: e.message,
-      raw_response: response.data.substring(0, 1000),
-    };
-  }
-
-  // Map API response to anime list
-  const animeList = scheduleData.map((item) => ({
-    title: item.title,
-    slug: `/${item.slug}/`,
-    img: item.featured_img_src,
-    type: item.east_type || "",
-    score: item.east_score ? parseFloat(item.east_score) : null,
-    genres: item.genre ? item.genre.split(", ").map(g => g.trim()).filter(g => g) : [],
-    time: item.east_time || "",
-    schedule: item.east_schedule || "",
-    description: item.content ? item.content.replace(/<[^>]*>/g, "").substring(0, 200) + "..." : "",
-    detail_url: `/detail-anime/${item.slug}/`,
-  }));
+  const $ = cheerio.load(response.data);
+  const animeList = [];
+  $(`.result-schedule[x-show="activeDay === '${targetDay}'"] .animepost`).slice(0, perPage).each((_, elem) => {
+    const card = $(elem);
+    const a = card.find('.animposx > a').first();
+    const url = a.attr('href') || '';
+    const slug = url.replace(/^https?:\/\/[^/]+\/anime/, '');
+    if (!slug) return;
+    animeList.push({
+      title: card.find('.data h2').text().trim() || a.attr('title') || '',
+      slug,
+      img: card.find('.content-thumb img').attr('src') || '',
+      type: card.find('.content-thumb .type').text().trim(),
+      score: parseFloat(card.find('.content-thumb .score').text().match(/[\d.]+/)?.[0]) || null,
+      genres: card.find('.data > .type').text().split(',').map(s => s.trim()).filter(Boolean),
+      time: card.find('.data_tw .ltseps').text().trim(),
+      schedule: dayNames[targetDay],
+      description: '',
+      detail_url: `/detail-anime${slug}`,
+    });
+  });
 
   return {
     message: "Jadwal Rilis Anime",

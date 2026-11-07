@@ -1,5 +1,6 @@
 const cheerio = require("cheerio");
 const { validateScrapeResponse } = require('./scrapeResponse');
+const { scrapeWithBrowser } = require('./browserScraper');
 require("dotenv").config();
 
 // Dynamic import untuk got-scraping (ESM module)
@@ -11,6 +12,9 @@ let gotScraping = null;
 
 // Helper function untuk scraping dengan got-scraping (bypass TLS fingerprinting)
 const scrapeGet = async (url) => {
+  if (url.startsWith(process.env.SCRAPE_URL || 'https://v2.samehadaku.how')) {
+    return scrapeWithBrowser(url);
+  }
   // Tunggu sampai gotScraping ready
   while (!gotScraping) {
     await new Promise(resolve => setTimeout(resolve, 100));
@@ -33,11 +37,10 @@ const scrapeGet = async (url) => {
 const parseAnimeList = ($) => {
   const animeList = [];
 
-  $("div.relat > article.animpost").each((i, elem) => {
+  $("article.animepost, div.relat > article.animpost").each((i, elem) => {
     const slug = $(elem)
       .find("div.animposx > a")
-      .attr("href")
-      .replace(process.env.SCRAPE_URL + "/anime", "");
+      .attr("href")?.replace(/^https?:\/\/[^/]+\/anime/, "") || '';
     const img = $(elem).find("div.content-thumb > img").attr("src");
     const alt = $(elem).find("div.content-thumb > img").attr("alt");
     const type = $(elem).find("div.content-thumb > div.type").text().trim();
@@ -45,7 +48,7 @@ const parseAnimeList = ($) => {
       .find("div.content-thumb > div.score")
       .text()
       .trim();
-    const title = $(elem).find("div.stooltip > div.title").text().trim();
+    const title = $(elem).find("div.stooltip > div.title").text().trim() || $(elem).find('a[title]').first().attr('title') || alt;
     const total_views = Number(
       $(elem)
         .find("div.stooltip > div.metadata > span:nth-child(3)")

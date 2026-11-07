@@ -84,6 +84,25 @@ const getAnimeDetail = async (slug) => {
       episodes,
     };
 
+    if (!result.title || !result.img) {
+      const main = $('main#content');
+      const info = main.find('h2').filter((_, el) => $(el).text().includes('Nonton Anime')).first().closest('.card');
+      result.title = main.find('h1[itemprop=headline]').first().text().trim().replace(/ Sub Indo$/i, '');
+      result.img = info.find('img').first().attr('src') || '';
+      const ratingText = info.find('.font-extrabold').first().text().trim();
+      result.rating = ratingText || '';
+      result.rating_count = info.find('.font-extrabold').first().next('span').text().replace('/', '').trim();
+      result.descriptions = info.find('.entry-content p').map((_, el) => $(el).text().trim()).get();
+      result.genres = info.find('a[href*="/genre/"]').map((_, el) => ({ tag: $(el).text().trim(), link: $(el).attr('href') })).get();
+      const list = main.find('h3').filter((_, el) => $(el).text().includes('List Episode')).first().closest('.card');
+      result.episodes = list.find('h4 > a').map((_, el) => {
+        const link = $(el).attr('href')?.replace(/^https?:\/\/[^/]+/, '') || '';
+        const title = $(el).text().trim();
+        return { title, link, detail_eps: `/detail-anime-episode${link}`, episode: Number(title.match(/Episode\s+(\d+)/i)?.[1] || 0) };
+      }).get().reverse();
+      if (!result.title || !result.img) throw new Error('Source returned no anime detail');
+    }
+
     // Save to backup if enabled
     if (USE_BACKUP) {
       await getBackupService().saveAnimeDetail(slug, result);
@@ -120,7 +139,7 @@ const getEpisodeDetail = async (slug) => {
     const title = $(".info_episode > div > h1").text().trim();
     const description = $(".info_episode  > div > div.entry-content.entry-content-single").text().trim();
     const episode_number = Number($("span[itemprop='episodeNumber']").text().trim());
-    const video_url = $("#player_embed > .pframe > iframe").attr("src") || 'belum tersedia (segera)';
+    const video_url = $("#player_embed > .pframe > iframe, #pembed iframe").first().attr("src") || 'belum tersedia (segera)';
     
     const videoslist = $("#server > ul > li");
     const videos = [];

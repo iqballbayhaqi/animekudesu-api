@@ -22,7 +22,7 @@ Unofficial REST API untuk mendapatkan data anime dari [Samehadaku](https://sameh
 - **Runtime:** Node.js
 - **Framework:** Express.js
 - **Architecture:** MVC (Model-View-Controller)
-- **Scraping:** Cheerio, Got-Scraping
+- **Scraping:** Cheerio, Puppeteer dengan stealth plugin untuk situs v2
 - **Documentation:** Swagger UI
 
 ## Installation
@@ -49,6 +49,8 @@ Buat file `.env` di root folder:
 ```env
 SCRAPE_URL=https://v2.samehadaku.how
 PORT=3000
+# Opsional jika Chrome sudah dipasang terpisah:
+# PUPPETEER_EXECUTABLE_PATH=/path/to/chrome
 ```
 
 ### 4. Run Server

@@ -12,3 +12,7 @@ test('rejects a Cloudflare challenge even when the HTTP status is 200', () => {
 test('accepts a normal source page', () => {
   assert.doesNotThrow(() => validateScrapeResponse({ statusCode: 200, body: '<html><title>Anime</title></html>' }));
 });
+
+test('accepts a content page with a Cloudflare footer script', () => {
+  assert.doesNotThrow(() => validateScrapeResponse({ statusCode: 200, body: '<html><title>Anime Terbaru</title><h2 class="entry-title">Anime</h2><script src="/cdn-cgi/challenge-platform/scripts/jsd/main.js"></script></html>' }));
+});

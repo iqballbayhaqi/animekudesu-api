@@ -33,7 +33,7 @@ const getNewAnime = async (page = 1) => {
     // Check total pages first
     const checkResponse = await scrapeGet(`${BASE_URL}/anime-terbaru/page/1`);
     const $check = cheerio.load(checkResponse.data);
-    const checkPageSection = $check("#main > div.post-show > ul > div > span:nth-child(1)").text().trim();
+    const checkPageSection = $check('div.pagination > span:first-child').first().text().trim();
     if (!checkPageSection && page > 1) throw new Error('Source pagination missing');
     const totalPageCheck = parseInt(checkPageSection.match(/of (\d+)/)?.[1] || 1);
 
@@ -50,19 +50,19 @@ const getNewAnime = async (page = 1) => {
     const $ = cheerio.load(response.data);
 
     const animeList = [];
-    $("#main > div.post-show > ul > li").each((i, elem) => {
+    $(".post-show > ul > li").each((i, elem) => {
       const img = $(elem).find("img").attr("src");
       const alt = $(elem).find("img").attr("alt");
-      const link = $(elem).find("a").attr("href").replace(BASE_URL, "");
+      const link = $(elem).find("h2.entry-title > a").attr("href")?.replace(/^https?:\/\/[^/]+/, "") || '';
       const title = $(elem).find("h2.entry-title > a").text();
-      const episode = $(elem).find("div.dtla > span:nth-child(2)").text().trim();
-      const posted_by = $(elem).find("div.dtla > span.author.vcard > author").text().trim();
-      const released = $(elem).find("div.dtla > span:nth-child(4)").text().trim().replace("Released on: ", "");
+      const episode = $(elem).find("div.dtla > span").first().text().trim().replace(/^Episode\s*/i, 'Episode ');
+      const posted_by = $(elem).find("div.dtla > span.author [itemprop=name]").text().trim();
+      const released = $(elem).find("div.dtla > span").last().text().trim().replace("Released on:", "").trim();
       animeList.push({ img, alt, link, title, episode, posted_by, released });
     });
     if (animeList.length === 0) throw new Error('Source returned no new anime items');
 
-    const page_section = $("#main > div.post-show > ul > div > span:nth-child(1)").text().trim();
+    const page_section = $('div.pagination > span:first-child').first().text().trim();
     const current_page = parseInt(page_section.match(/Page (\d+) of/)?.[1] || page);
     const total_page = parseInt(page_section.match(/of (\d+)/)?.[1] || 1);
 
